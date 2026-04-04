@@ -19,6 +19,10 @@ This repository demonstrates how to build and orchestrate intelligent agents usi
 
 ## 🛠️ Installation & Setup
 
+## 👉 At the very start
+Create a file in your home directory named project_id.txt and place your project id in it.
+The shell scripts that set up the environment are going to look for that file with that project id.
+
 ### 1. Initialize the Environment
 Run the initialization script to create/select a GCP project and enable the necessary billing/APIs:
 
