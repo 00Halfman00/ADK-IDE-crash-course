@@ -1,0 +1,15 @@
+# Gemini CLI
+GEMINI.md
+state.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+.DS_Store
+.venv
+
+# uv
+uv.lock

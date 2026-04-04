@@ -1,0 +1,19 @@
+[project]
+name = "tools-and-memory"
+version = "0.1.0"
+description = "Agentic Service with Tools and Memory"
+readme = "README.md"
+requires-python = "==3.12.*"
+dependencies = [
+    "google-adk>=1.28.0",
+    "google-auth>=2.49.1",
+    "google-genai>=1.70.0",
+    "mypy>=1.20.0",
+    "pandas>=2.0.0",
+    "plotly>=5.0.0",
+    "python-dotenv>=1.2.2",
+    "requests>=2.33.1",
+]
+
+[tool.uv]
+environments = ["sys_platform == 'linux' and python_version == '3.12'"]

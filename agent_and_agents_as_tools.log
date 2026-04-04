@@ -1,0 +1,28 @@
+2026-04-03 18:16:25,173 - __main__ - INFO - Found project id!
+2026-04-03 18:16:25,249 - google_adk.google.adk.models.google_llm - INFO - Sending out request, model: gemini-2.5-flash, backend: GoogleLLMVariant.VERTEX_AI, stream: False
+2026-04-03 18:16:27,702 - google_adk.google.adk.models.google_llm - INFO - Response received from the model.
+2026-04-03 18:16:27,702 - google_genai.types - WARNING - Warning: there are non-text parts in the response: ['function_call'], returning concatenated text result from text parts. Check the full candidates.content.parts accessor to get the full model response.
+2026-04-03 18:30:17,403 - __main__ - INFO - Found project id!
+2026-04-03 18:30:17,487 - google_adk.google.adk.models.google_llm - INFO - Sending out request, model: gemini-2.5-flash, backend: GoogleLLMVariant.VERTEX_AI, stream: False
+2026-04-03 18:30:20,159 - google_adk.google.adk.models.google_llm - INFO - Response received from the model.
+2026-04-03 18:30:20,160 - google_genai.types - WARNING - Warning: there are non-text parts in the response: ['function_call'], returning concatenated text result from text parts. Check the full candidates.content.parts accessor to get the full model response.
+2026-04-03 18:30:20,215 - google_adk.google.adk.models.google_llm - INFO - Sending out request, model: gemini-2.5-flash, backend: GoogleLLMVariant.VERTEX_AI, stream: False
+2026-04-03 18:30:20,215 - google_genai.models - INFO - AFC is enabled with max remote calls: 10.
+2026-04-03 18:30:21,859 - google_adk.google.adk.models.google_llm - INFO - Response received from the model.
+2026-04-03 18:30:21,860 - google_adk.google.adk.runners - INFO - Closing runner...
+2026-04-03 18:30:21,860 - google_adk.google.adk.runners - INFO - Runner closed.
+2026-04-03 18:30:21,922 - google_adk.google.adk.models.google_llm - INFO - Sending out request, model: gemini-2.5-flash, backend: GoogleLLMVariant.VERTEX_AI, stream: False
+2026-04-03 18:30:24,061 - google_adk.google.adk.models.google_llm - INFO - Response received from the model.
+2026-04-03 18:30:24,110 - google_adk.google.adk.models.google_llm - INFO - Sending out request, model: gemini-2.5-flash, backend: GoogleLLMVariant.VERTEX_AI, stream: False
+2026-04-03 18:30:27,010 - google_adk.google.adk.models.google_llm - INFO - Response received from the model.
+2026-04-03 18:30:27,065 - google_adk.google.adk.models.google_llm - INFO - Sending out request, model: gemini-2.5-flash, backend: GoogleLLMVariant.VERTEX_AI, stream: False
+2026-04-03 18:30:27,065 - google_genai.models - INFO - AFC is enabled with max remote calls: 10.
+2026-04-03 18:30:29,517 - google_adk.google.adk.models.google_llm - INFO - Response received from the model.
+2026-04-03 18:30:29,518 - google_adk.google.adk.runners - INFO - Closing runner...
+2026-04-03 18:30:29,518 - google_adk.google.adk.runners - INFO - Runner closed.
+2026-04-03 18:30:29,571 - google_adk.google.adk.models.google_llm - INFO - Sending out request, model: gemini-2.5-flash, backend: GoogleLLMVariant.VERTEX_AI, stream: False
+2026-04-03 18:30:31,887 - google_adk.google.adk.models.google_llm - INFO - Response received from the model.
+2026-04-03 18:30:31,888 - google_adk.google.adk.runners - INFO - Closing runner...
+2026-04-03 18:30:31,888 - google_adk.google.adk.runners - INFO - Runner closed.
+2026-04-03 18:30:31,939 - google_adk.google.adk.models.google_llm - INFO - Sending out request, model: gemini-2.5-flash, backend: GoogleLLMVariant.VERTEX_AI, stream: False
+2026-04-03 18:30:34,202 - google_adk.google.adk.models.google_llm - INFO - Response received from the model.
