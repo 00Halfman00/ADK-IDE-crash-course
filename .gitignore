@@ -10,6 +10,7 @@ venv/
 .env
 .DS_Store
 .venv
+*.log
 
 # uv
 uv.lock
