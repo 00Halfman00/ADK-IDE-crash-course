@@ -2,6 +2,21 @@
 
 This repository demonstrates how to build and orchestrate intelligent agents using the **Google Agent Development Kit (ADK)** and **Gemini** models on **Google Cloud Platform (GCP)**. It is designed to work in a Linux environment (including WSL on Windows 11) and provides a hands-on guide to tool integration, hierarchical agent orchestration, and session management.
 
+## 🧠 Recognition
+Many of the Agent coding examples come from ## Author Qingyue (Annie) Wang
+The rest I modified to my liking and for this environment.
+`````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````
+
+HI, I'm Qingyue (Annie) Wang, a developer advocate and AI engineer at **Google**, passionate about helping developers build with AI and cloud technologies :)
+If you have questions, contact me on [LinkedIn](https://www.linkedin.com/in/anniewangtech/) , [X](https://twitter.com/anniewangtech) or email anniewangtech0510@Gmail.com
+
+
+
+  (\__/)
+  (•ㅅ•)
+  /づ  📚      Enjoy learning AI Agents :)
+`````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````
+
 ## 🚀 Key Features
 
 *   **Google ADK Integration:** Leverages the latest patterns for building robust, tool-using agents.

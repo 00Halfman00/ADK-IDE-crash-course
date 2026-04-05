@@ -1,26 +1,12 @@
 import os
-import sys
-import json
 import logging
 import asyncio
-import random
-import string
 import requests
-from uuid import uuid4
-from typing import Any, List
-
-import pandas as pd
-import plotly.graph_objects as go
 import vertexai
 
-# --- ADK, Agent, and Evaluation Components ---
 from google.adk.agents import Agent
-from google.adk.events import Event
 from google.adk.runners import Runner
-import google.adk as adk
-from google.adk.tools import google_search
 from google.adk.sessions import InMemorySessionService, Session
-from google.genai import types
 from google.genai.types import Content, Part
 from dotenv import load_dotenv
 
@@ -59,6 +45,8 @@ else:
     logger.error("No project id found. AI features will be disabled.")
 
 
+# <---  Initialize Session Service  --->
+# This one service will manage all the different sessions.
 session_service = InMemorySessionService()
 my_user_id = "adk_adventurer_007"
 
@@ -81,7 +69,7 @@ def get_live_weather_forecast(location: str) -> dict:
     Returns:
         A dictionary containing the temperature and a detailed forecast.
     """
-    print(f"TOOL CALLED: get_live weather_forecast(location='{location}')")
+    print(f"TOOL CALLED: get_live_weather_forecast(location='{location}')")
 
     # Find coordinates for the location
     normalized_location = location.lower()
@@ -96,7 +84,6 @@ def get_live_weather_forecast(location: str) -> dict:
 
     try:
         #   NWS API requires TWO steps:
-
         # 1.    Get the forecast URL from the coordinates.
         points_url = f"https://api.weather.gov/points/{coords_str}"
         headers = {"User-Agent": "ADK Example IDE"}
@@ -108,7 +95,6 @@ def get_live_weather_forecast(location: str) -> dict:
         forecast_response = requests.get(forecast_url, headers=headers)
         forecast_response.raise_for_status() # Raise an exception for bad status codes
 
-
         # Extract the relevant forecast details
         current_period = forecast_response.json()['properties']['periods'][0]
 
@@ -118,7 +104,6 @@ def get_live_weather_forecast(location: str) -> dict:
             "forecast": current_period['detailedForecast']
         }
         
-
     except requests.exceptions.RequestException as e:
         return {"status": "error", "message": f"API request failed: {e}"}
 
@@ -126,9 +111,9 @@ def get_live_weather_forecast(location: str) -> dict:
 
 
 
-#  <-----     IV.    Helper Functions to Run Agent    ----->
+#  <-----     IV.    FUNCTION TO DEFINE THE WEATHER AGENT    ----->
 
-def create_weather_agent() -> Agent:
+def create_weather_planner_agent() -> Agent:
     "Create the Weather Agent"
     
     instruction = (
@@ -147,39 +132,31 @@ def create_weather_agent() -> Agent:
     )
 
 
-weather_agent = create_weather_agent()
+weather_agent = create_weather_planner_agent()
 print(f" Agent: {weather_agent.name} is created and can now call a live weather API!")
 
 
 
 
+#  <-----     V.    FUNCTION TO RUN AGENT    ----->
+
 async def run_agent_query(agent: Agent, query: str, session: Session, user_id: str, is_router: bool = False) -> str | None:
     """Initializes a runner and executes a query for a given agent and session."""
 
-
     print(f"\nRunning query for agent: '{agent.name}' in session: '{session.id}'...")
-
-    runner = Runner(
-        agent=agent,
-        session_service=session_service,
-        app_name=agent.name
-    )
-
+    runner = Runner(agent=agent, session_service=session_service, app_name=agent.name)
     final_response = ""
+
     try:
-        async for event in runner.run_async(
-            user_id=user_id,
-            session_id=session.id,
-            new_message=Content(parts=[Part(text=query)], role="user")
-        ):
+        async for event in runner.run_async(user_id=user_id, session_id=session.id, new_message=Content(parts=[Part(text=query)], role="user")):
             if not is_router:
                 # Let's see what the agent is thinking!
                 print(f"EVENT: {event}")
             if event.is_final_response() and event.content and event.content.parts:
                 final_response = event.content.parts[0].text
-                
+
     except Exception as e:
-        final_response = f"An error occured in run_agent_query: {e}"
+        final_response = f"An error occurred in run_agent_query: {e}"
 
     if not is_router:
         print("\n" + "-"*50)
@@ -192,8 +169,10 @@ async def run_agent_query(agent: Agent, query: str, session: Session, user_id: s
 
 
 
-async def run_weather_planner_test():
-    # Create a new, single-sue session for this query
+#  <-----     VI.    FUNCTION TO TEST THE WEATHER PLANNER AGENT    ----->
+
+async def test_weather_planner_agent():
+    # Create a new, single-use session for this query
 
     weather_session = await session_service.create_session(
         app_name=weather_agent.name, 
@@ -210,6 +189,4 @@ async def run_weather_planner_test():
 
 
 if __name__ == "__main__":
-    asyncio.run(run_weather_planner_test())
-
-
+    asyncio.run(test_weather_planner_agent())
