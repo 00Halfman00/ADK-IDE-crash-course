@@ -6,14 +6,15 @@ import vertexai
 
 from dotenv import load_dotenv
 from google.adk.agents import Agent
-from google.adk.runners import Runner
 from google.adk.tools import ToolContext
 from google.adk.tools.agent_tool import AgentTool
-from google.adk.sessions import InMemorySessionService, Session
-from google.genai.types import Content, Part
+from google.adk.sessions import InMemorySessionService
 
 
-print("✅ All libraries are ready to go!")
+from agent_query import run_agent_query
+
+
+print("✅ ALL LIBRARIES ARE LOADED AND READY!")
 
 
 
@@ -122,7 +123,7 @@ async def call_db_agent(question: str, tool_context: ToolContext):
 async def call_concierge_agent(question: str, tool_context: ToolContext):
     """After getting data with call_db_agent, use this tool to get travel advice, opinions, or recommendations."""
 
-    print("<---  TOOLCALL: call_concierge_agent  --->")
+    print("<---  TOOL CALL: call_concierge_agent  --->")
     # Retrieve the data fetched from the previous tool
     input_data = tool_context.state.get("retrieved_data", "No data found.")
 
@@ -165,42 +166,10 @@ def create_agent() -> Agent:
 
 
 orchestrator_agent = create_agent()
-print(f"Orchestrator Agent: '{orchestrator_agent.name} is defined and ready.")
+print(f"ORCHESTRATOR AGENT '{orchestrator_agent.name} IS DEFINED AND READY.")
 
 
 
-
-#  <-----     IV.    FUNCTION TO RUN AGENT    ----->
-
-async def run_agent_query(agent: Agent, query: str, session: Session, user_id: str, is_router: bool = False):
-    """Initializes a runner and executes a query for a given agent and session."""
-
-    print(f"\nRunning query for agent: '{agent.name}' in session: '{session.id}'")
-    runner = Runner(agent=agent, session_service=session_service, app_name=agent.name)
-    final_response = ""
-
-    try:
-        async for event in runner.run_async(user_id=user_id, session_id=session.id, new_message=Content(parts=[Part(text=query)], role="user")):
-            if not is_router:
-                # Let's see what the agent is thinking!
-                print(f"<---------------------------    EVENT:    -------------------------------------------->\n {event}")
-            if event.is_final_response() and event.content and event.content.parts:
-                final_response = event.content.parts[0].text
-
-    except Exception as e:
-        final_response = f"An error occurred: {e}"
-
-    if not is_router:
-        print("\n" + "-"*50)
-        print("✅ Final Response:")
-        print(final_response)
-        print("-"*50 + "\n")
-
-
-
-
-
-#  <-----     V.    FUNCTION TO TEST THE ORCHESTRATOR AGENT    ----->
 
 async def test_orchestrator_agent() -> None:
     """Sets up a session and runs a query against the top-level orchestration_agent"""
@@ -209,8 +178,8 @@ async def test_orchestrator_agent() -> None:
     orchestrator_session = await session_service.create_session(app_name=orchestrator_agent.name, user_id=my_user_id)
     # This query is designed to trigger the two step process:
     query = "Find the top-rated hotels in San Francisco from the database, then suggest a dinner spot near the one with the most reviews."
-    print(f"User Query: '{query}'")
-    await run_agent_query(orchestrator_agent, query, orchestrator_session, my_user_id)
+    print(f"USER QUERY: '{query}'")
+    await run_agent_query(orchestrator_agent, query, orchestrator_session, my_user_id, session_service)
 
 
 

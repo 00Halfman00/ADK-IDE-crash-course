@@ -4,7 +4,8 @@ This repository demonstrates how to build and orchestrate intelligent agents usi
 
 ## 🧠 Recognition
 Many of the Agent coding examples come from ## Author Qingyue (Annie) Wang
-The rest I modified to my liking and for this environment.
+The environment and file structure/architecture, I modified to my liking:
+  Decoupled Logic: The agent definition lives in one file, and the execution engine lives in another. This is exactly how production AI systems are built.
 `````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````
 
 HI, I'm Qingyue (Annie) Wang, a developer advocate and AI engineer at **Google**, passionate about helping developers build with AI and cloud technologies :)

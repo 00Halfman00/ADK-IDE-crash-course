@@ -5,13 +5,14 @@ import requests
 import vertexai
 
 from google.adk.agents import Agent
-from google.adk.runners import Runner
-from google.adk.sessions import InMemorySessionService, Session
-from google.genai.types import Content, Part
+from google.adk.sessions import InMemorySessionService
 from dotenv import load_dotenv
 
 
-print("✅ All libraries are ready to go!")
+from agent_query import run_agent_query
+
+
+print("✅ ALL LIBRARIES ARE LOADED AND READY TO GO!")
 
 
 
@@ -133,38 +134,7 @@ def create_weather_planner_agent() -> Agent:
 
 
 weather_agent = create_weather_planner_agent()
-print(f" Agent: {weather_agent.name} is created and can now call a live weather API!")
-
-
-
-
-#  <-----     V.    FUNCTION TO RUN AGENT    ----->
-
-async def run_agent_query(agent: Agent, query: str, session: Session, user_id: str, is_router: bool = False) -> str | None:
-    """Initializes a runner and executes a query for a given agent and session."""
-
-    print(f"\nRunning query for agent: '{agent.name}' in session: '{session.id}'...")
-    runner = Runner(agent=agent, session_service=session_service, app_name=agent.name)
-    final_response = ""
-
-    try:
-        async for event in runner.run_async(user_id=user_id, session_id=session.id, new_message=Content(parts=[Part(text=query)], role="user")):
-            if not is_router:
-                # Let's see what the agent is thinking!
-                print(f"EVENT: {event}")
-            if event.is_final_response() and event.content and event.content.parts:
-                final_response = event.content.parts[0].text
-
-    except Exception as e:
-        final_response = f"An error occurred in run_agent_query: {e}"
-
-    if not is_router:
-        print("\n" + "-"*50)
-        print("✅ Final Response:\n")
-        print(final_response)
-        print("-"*50 + "\n")
-    
-    return final_response
+print(f" AGENT: {weather_agent.name} IS CREATED AND CAN NOW CALL LIVE WEATHER API!")
 
 
 
@@ -174,15 +144,10 @@ async def run_agent_query(agent: Agent, query: str, session: Session, user_id: s
 async def test_weather_planner_agent():
     # Create a new, single-use session for this query
 
-    weather_session = await session_service.create_session(
-        app_name=weather_agent.name, 
-        user_id=my_user_id
-    )
-
+    weather_session = await session_service.create_session(app_name=weather_agent.name, user_id=my_user_id)
     query = "I want to go hiking near Lake Tahoe, what's the weather like?"
-    print(f"User query: '{query}'")
-
-    await run_agent_query(weather_agent, query, weather_session, my_user_id)
+    print(f"USER QUERY: '{query}'")
+    await run_agent_query(weather_agent, query, weather_session, my_user_id, session_service)
 
 
 
