@@ -96,7 +96,7 @@ print(f"AGENT '{multi_day_trip_agent}' IS DEFINED AND READY.")
 
 #  <-----     IV.    FUNCTION TO TEST ADAPTATION AND MEMORY    ----->
 
-async def run_adaptive_memory_demonstration():
+async def test_adaptive_memory_demonstration():
     print("AGENT THAT ADAPTS THE SAME SESSION.")
 
     # Create a session that will be reused for the entire conversation
@@ -114,12 +114,12 @@ async def run_adaptive_memory_demonstration():
     print(f"\nUSER (TURN 2) FEEDBACK: '{query2}'")
     await run_agent_query(multi_day_trip_agent, query2, trip_session, my_user_id, session_service)
 
-    # Turn 3: Thee user confirms and asks to continue
+    # Turn 3: The user confirms and asks to continue
     query3 = "Yes, the nnew plan for Day 1 is perfect! Please plan Day 2 now, keeping the food theme in mind."
     print(f"USER (TURN 3) CONFIRMATION: '{query3}'")
     await run_agent_query(multi_day_trip_agent, query3, trip_session, my_user_id, session_service)
-
+ 
 
 
 if __name__ == "__main__":
-    asyncio.run(run_adaptive_memory_demonstration())
+    asyncio.run(test_adaptive_memory_demonstration())
