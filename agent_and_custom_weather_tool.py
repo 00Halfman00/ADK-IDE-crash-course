@@ -141,7 +141,7 @@ print(f" AGENT: {weather_agent.name} IS CREATED AND CAN NOW CALL LIVE WEATHER AP
 
 #  <-----     VI.    FUNCTION TO TEST THE WEATHER PLANNER AGENT    ----->
 
-async def test_weather_planner_agent():
+async def test_weather_planner_agent() -> None:
     # Create a new, single-use session for this query
 
     weather_session = await session_service.create_session(app_name=weather_agent.name, user_id=my_user_id)

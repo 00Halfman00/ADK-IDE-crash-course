@@ -12,7 +12,7 @@ from google.adk.sessions import InMemorySessionService
 
 
 from agent_query import run_agent_query
-
+from agents import create_db_agent, create_food_critic_agent, create_concierge_agent
 
 print("✅ ALL LIBRARIES ARE LOADED AND READY!")
 
@@ -56,51 +56,12 @@ my_user_id = "adk_adventurer_007"
 
 
 
-
-
 # <-----  III.   DEFINE THE SPECIALIST AGENTS  ------>
 
-# Assume 'db_agent' is a pre-defined NL2SQL Agent.
-db_agent = Agent(
-    name="db_agent",
-    model="gemini-2.5-flash",
-    instruction=(
-        """
-        You are a database agent. When asked for data, return this mock JSON object:
-        {
-        'status': 'success',
-        'data': [{'name': 'The Grand Hotel', 'rating': 5, 'reviews': 450}, {'name': 'Seaside Inn', 'rating': 4, 'reviews': 650}]
-        }
-        """
-    )
-)
-
-
-food_critic_agent = Agent(
-    name="food_critic_agent",
-    model="gemini-2.5-flash",
-    instruction=(
-        """
-        You are a snobby but brilliant food critic.
-        You ONLY respond with a single, witty restaurant suggestion nearby the location.
-        """
-    )
-)
-
-
+db_agent = create_db_agent()
+food_critic_agent = create_food_critic_agent()
 # The Concierge knows how to use the Food Critic
-concierge_agent = Agent(
-    name="concierge_agent",
-    model="gemini-2.5-flash",
-    instruction=(
-        """
-        You are a five star hotel concierge.
-        If the user asks for a restaurant recommendation, you MUST use the 'food_critic_agent' tool.
-        Present the opinion to the user politely.
-        """
-    ),
-    tools=[AgentTool(agent=food_critic_agent)]
-)
+concierge_agent = create_concierge_agent()
 
 
 
@@ -114,8 +75,11 @@ async def call_db_agent(question: str, tool_context: ToolContext):
     agent_tool = AgentTool(agent=db_agent)
     db_agent_output = await agent_tool.run_async(args={"request": question}, tool_context=tool_context)
 
-    # Store the retrieved data in the context's state
-    tool_context.state["retrieved_data"] = db_agent_output
+    # Avoid storage collisions/overwrites by keys
+    if "db_results" not in tool_context.state:
+        tool_context.state["db_results"] = {}
+
+    tool_context.state["db_results"]["retrieved_data"] = db_agent_output
     return db_agent_output
 
 
@@ -125,12 +89,13 @@ async def call_concierge_agent(question: str, tool_context: ToolContext):
 
     print("<---  TOOL CALL: call_concierge_agent  --->")
     # Retrieve the data fetched from the previous tool
-    input_data = tool_context.state.get("retrieved_data", "No data found.")
+    input_data = tool_context.state.get("db_results", {})
+    data = input_data.get("retrieved_data") or "No previous database data found."
 
     # Formulate new prompt for the concierge, giving it the data context
     question_with_data = (
         f"""
-        context: The database returned the following data: {input_data}
+        context: The database returned the following data: {data}
         User's request: {question}
         """
     )
@@ -145,10 +110,10 @@ async def call_concierge_agent(question: str, tool_context: ToolContext):
 
 # <-----  V.   DEFINE THE ORCHESTRATOR(TOP-LEVEL) AGENT  ------>
 
-def create_agent() -> Agent:
+def create_orchestrator_agent() -> Agent:
     """Create the Orchestrator Agent"""
 
-    instruction=(
+    instruction = (
         """
         You are a master travel planner who uses data to make recommendations.
         1.  **ALWAYS start with the 'call_db_agent' tool** to fetch a list of places (like hotels) that match the user's criteria.
@@ -165,11 +130,13 @@ def create_agent() -> Agent:
     )
 
 
-orchestrator_agent = create_agent()
+orchestrator_agent = create_orchestrator_agent()
 print(f"ORCHESTRATOR AGENT '{orchestrator_agent.name} IS DEFINED AND READY.")
 
 
 
+
+# <-----  VI.   TESTS THE ORCHESTRATOR(TOP-LEVEL) AGENT  ------>
 
 async def test_orchestrator_agent() -> None:
     """Sets up a session and runs a query against the top-level orchestration_agent"""

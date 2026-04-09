@@ -5,8 +5,6 @@ import vertexai
 
 
 from dotenv import load_dotenv
-from google.adk.agents import Agent
-from google.adk.tools import google_search
 from google.adk.sessions import InMemorySessionService
 
 
@@ -67,7 +65,7 @@ flag: bool = False
 
 # <-----  III.   TEST THE ADAPTIVE-PLANNER-WITH-MEMORY AGENT  ------>
 
-async def test_memory_success_demo():
+async def test_memory_success_demo() -> None:
     print("\n" + "#"*60)
     print("AGENT THAT SUCCEEDS TO ADAPT MEMORY FROM THE SAME SESSION.")
     print("#"*60)
@@ -96,7 +94,7 @@ async def test_memory_success_demo():
 
 # <-----  IV.   TEST THE ADAPTIVE-PLANNER-WITHOUT-MEMORY AGENT  ------>
 
-async def test_memory_failure_demo():
+async def test_memory_failure_demo() -> None:
     print("\n" + "#"*60)
     print("AGENT THAT FAILS TO ADAPT MEMORY FROM THE SESSION.")
     print("#"*60)

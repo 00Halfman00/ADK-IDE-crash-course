@@ -8,7 +8,7 @@ from google.adk.tools import google_search
 from google.adk.sessions import InMemorySessionService
 from dotenv import load_dotenv
 
-
+from agents import create_day_trip_agent
 from agent_query import run_agent_query
 
 
@@ -55,35 +55,8 @@ my_user_id = "adk_adventurer_007"
 
 #  <-----     III.    FUNCTION TO DEFINE DAY TRIP AGENT    ----->
 
-
-def create_day_trip_agent() -> Agent:
-    """Create the Spontaneous Day Trip Generator Agent"""
-
-    instructions = (
-        """
-        You are the "Spontaneous Day Trip" Generator - a specialized AI assistant that creates engaging full-day itineraries.
-        YOUR MISSION:
-        Transform a simple mood or interest into a complete day-trip adventure with real-time details, while respecting a budget.
-        GUIDELINES:
-        1.  **Budget-Aware**: Pay close attention to budget hints like 'cheap', 'affordable', or 'splurge'.
-            Use Google Search to find activities (free museums, parks, paid attractions) that match the user's budget.
-        2.  **Full-Day Structure**: Create morning, afternoon, and evening activities.
-        3.  **Real-Time Focus**: Search for current operating hours and special events.
-        4.  **Mood Matching**: Align suggestions with the requested mood (adventurous, relaxing, artsy, etc.).
-        RETURN itinerary with clear time blocks and specific venue names.
-        """
-    )
-
-    return Agent(
-        name="day_trip_agent",
-        model="gemini-2.5-flash",
-        instruction=instructions,
-        tools=[google_search]
-    )
-
 day_trip_agent= create_day_trip_agent()
 print(f"AGENTt: {day_trip_agent.name} IS UP AND READY TO CREATE TRIPS.")
-
 
 
 

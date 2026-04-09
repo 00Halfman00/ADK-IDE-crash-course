@@ -5,11 +5,9 @@ import vertexai
 
 
 from dotenv import load_dotenv
-from google.adk.agents import Agent
-from google.adk.tools import google_search
 from google.adk.sessions import InMemorySessionService
 
-
+from agents import create_multi_day_trip_agent
 from agent_query import run_agent_query
 
 
@@ -19,7 +17,6 @@ print("✅ ALL LIBRARIES ARE LOADED AND READY TO GO!")
 
 
 # <-----  I.    CONFIGURE LOGGING  ------>
-
 
 logging.basicConfig(
     level=logging.INFO,
@@ -31,8 +28,6 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
-
-
 
 
 
@@ -59,35 +54,6 @@ my_user_id = "adk_adventurer_007"
 
 # <-----  III.   DEFINE THE ADAPTIVE PLANNER WITH MEMORY AGENT  ------>
 
-def create_multi_day_trip_agent():
-    """Create the Progressive Multi-Day Planner agent"""
-
-    instructions = (
-        """
-        You are the "Adaptive Trip Plannner" - an AI assistant that builds multi-day travel itineraries step-by-step.
-
-        YOUR DEFINING FEATURE:
-        You have short-term memory. You MUST refer back to our conversation to understand the trip's context, what has already been planned, and the user's preference.
-        If the user asks for a change, you must adapt the plan while keeping the unchanged parts consistent.
-
-        YOUR MISSION:
-        1.  **Initiate**: Start by asking for the destination, trip duration, and interest.
-        2.  **Plan Progressively**: Plan ONLY ONE DAY at a time. After presenting a plan, ask for confirmation.
-        3.  **Handle Feedback**: If a user dislikes  a suggestion (e.g., "I don't like museums"), acknowledge their feedback and provide a *new alternative* suggestion for that time slot that still fits the overall theme.
-        4.  **Maintain Context**: For each new day, ensure the activities are unique and build logically on the previous days. Do not suggest the same things repeatedly.
-        5.  **Final Output**: Return each day's itenerary.
-        """
-    )
-
-    return Agent(
-        name="multi_day_trip_agent",
-        model="gemini-2.5-flash",
-        description="Agent that progressively plans a multi-day trip, remembering previous days and adapting to user feedback",
-        instruction=instructions,
-        tools=[google_search]
-    )
-
-
 multi_day_trip_agent = create_multi_day_trip_agent()
 print(f"AGENT '{multi_day_trip_agent}' IS DEFINED AND READY.")
 
@@ -96,7 +62,7 @@ print(f"AGENT '{multi_day_trip_agent}' IS DEFINED AND READY.")
 
 #  <-----     IV.    FUNCTION TO TEST ADAPTATION AND MEMORY    ----->
 
-async def test_adaptive_memory_demonstration():
+async def test_adaptive_memory_demonstration() -> None:
     print("AGENT THAT ADAPTS THE SAME SESSION.")
 
     # Create a session that will be reused for the entire conversation

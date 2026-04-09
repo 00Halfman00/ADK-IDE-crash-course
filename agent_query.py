@@ -68,3 +68,5 @@ async def run_agent_query(agent: Agent, query: str, session: Session, user_id: s
         print("✅ FINAL RESPONSE:")
         print(final_response)
         print("-"*50 + "\n")
+    
+    return final_response
