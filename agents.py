@@ -1,9 +1,9 @@
-from google.adk.agents import Agent
+from google.adk.agents import Agent, SequentialAgent
 from google.adk.tools import ToolContext
 from google.adk.tools.agent_tool import AgentTool
 from google.adk.tools import google_search
 
-
+model = "gemini-2.5-flash"
 
 # <-----  I.   DEFINE THE SPECIALIST AGENTS  ------>
 
@@ -24,7 +24,7 @@ def create_db_agent() -> Agent:
 
     return Agent(
         name="db_agent",
-        model="gemini-1.5-flash",
+        model=model,
         instruction=instruction
     )
 
@@ -43,7 +43,7 @@ def create_food_critic_agent() -> Agent:
 
     return Agent(
         name="food_critic_agent",
-        model="gemini-1.5-flash",
+        model=model,
         instruction=instruction
     )
 
@@ -63,7 +63,7 @@ def create_concierge_agent() -> Agent:
 
     return Agent(
         name="concierge_agent",
-        model="gemini-1.5-flash",
+        model=model,
         instruction=instruction,
         tools=[AgentTool(agent=create_food_critic_agent())]
     )
@@ -93,7 +93,7 @@ def create_multi_day_trip_agent() -> Agent:
 
     return Agent(
         name="multi_day_trip_agent",
-        model="gemini-1.5-flash",
+        model=model,
         description="Agent that progressively plans a multi-day trip, remembering previous days and adapting to user feedback",
         instruction=instructions,
         tools=[google_search]
@@ -122,7 +122,7 @@ def create_day_trip_agent() -> Agent:
 
     return Agent(
         name="day_trip_agent",
-        model="gemini-1.5-flash",
+        model=model,
         instruction=instructions,
         tools=[google_search]
     )
@@ -142,7 +142,7 @@ def create_foodie_agent() -> Agent:
 
     return Agent(
         name="foodie_agent",
-        model="gemini-1.5-flash",
+        model=model,
         tools=[google_search],
         instruction=instruction
     )
@@ -161,7 +161,7 @@ def create_weekend_guide_agent() -> Agent:
     
     return Agent(
     name="weekend_guide_agent",
-    model="gemini-1.5-flash",
+    model=model,
     tools=[google_search],
     instruction=instruction
 )
@@ -170,13 +170,95 @@ def create_weekend_guide_agent() -> Agent:
 
 
 def create_transportation_agent() -> Agent:
-    """Create the Navigation Assistant Agent."""
 
     instruction = "You are a navigation assistant. Given a starting point and a destination, provide clear directions on how to get from the start to the end."
 
     return Agent(
         name="transportation_agent",
-        model="gemini-1.5-flash",
+        model=model,
         tools=[google_search],
+        instruction=instruction
+    )
+
+
+def create_restaurant_agent() -> Agent:
+    instructions = (
+        """
+        You are an expert food critic. Your goal is to find the best restaurant based on a user's request.
+        When you recommend a place, you must outpu *ONLY* the name of the establishment and nothing else.
+        For example, if the best sushi is at 'Chi Tung', you should output only: Chi Tung
+        """
+    )
+
+    return Agent(
+        name="restaurant_agent",
+        model=model,
+        instruction=instructions,
+        output_key="destination"
+    )
+
+
+def create_router_agent_v1(options_str:str) -> Agent:
+    instruction = (
+        f"""
+        You are a request router. Analyze the user's query and choose the best option from the list below.
+        Do not answer the query yourself; only return the name of the choice.
+
+        Available Options:
+        {options_str}
+
+        Return only the key name (e.g., 'foodie_agent') and nothing else.
+        If you are unsure, default to 'day_trip_agent'.
+        """
+    )
+    return Agent(
+        name="router_agent_v1",
+        model=model,
+        instruction=instruction
+    )
+
+
+
+def create_transport_agent() -> Agent:
+    instruction = (
+        """
+        You are a navigation assistant. Given a destination, provide clear directions.
+        The user wants to go to {destination}.
+        Analyze the user's full original query to find their starting point.
+        Then, provide clear directions from that starting point to {destination}.
+        """
+    )
+
+    return Agent(
+        name="transport_agent",
+        model=model,
+        tools=[google_search],
+        instruction=instruction
+    )
+
+
+def create_find_and_navigate_agent() -> SequentialAgent:
+    return SequentialAgent(
+        name="find_and_navigate_agent",
+        sub_agents=[create_restaurant_agent(), create_transport_agent()],
+        description="A workflow that first finds a location and then provides directions to it."
+    )
+
+
+def create_router_agent_v2(options_str: str) -> Agent:
+    instruction = (
+        f"""
+        You are a request router. Your job is to analyze a user's query and decide which of the following agents or workflows is best suited to handle it.
+        Do not answer the query yourself, only return the name of the most appropriate choice.
+
+        Available Options: {options_str}
+
+        Only return the single, most appropriate option's name and nothing else.
+        """
+    )
+
+    return Agent(
+        name="routing_agent",
+        model=model,
         instruction=instruction
     )

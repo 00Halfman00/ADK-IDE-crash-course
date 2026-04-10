@@ -8,7 +8,7 @@ from google.adk.agents import Agent
 from google.adk.sessions import InMemorySessionService
 
 
-from agents import create_day_trip_agent, create_foodie_agent, create_weekend_guide_agent, create_transportation_agent
+from agents import create_day_trip_agent, create_foodie_agent, create_weekend_guide_agent, create_transportation_agent, create_router_agent_v1
 from agent_query import run_agent_query
 
 print("✅ ALL LIBRARIES ARE LOADED AND READY TO GO!")
@@ -29,8 +29,6 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
-
-
 
 
 
@@ -97,27 +95,7 @@ async def handle_find_and_navigate(query):
 
 # <-----  V.   DEFINE THE BRAINS OF THE OPERATION: THE ROUTER AGENT  ------>
 
-def create_router_agent() -> Agent:
-    instruction = (
-        f"""
-        You are a request router. Analyze the user's query and choose the best option from the list below.
-        Do not answer the query yourself; only return the name of the choice.
-
-        Available Options:
-        {options_str}
-
-        Return only the key name (e.g., 'foodie_agent') and nothing else.
-        If you are unsure, default to 'day_trip_agent'.
-        """
-    )
-    return Agent(
-        name="router_agent",
-        model="gemini-2.5-flash",
-        instruction=instruction
-    )
-
-
-router_agent = create_router_agent()
+router_agent = create_router_agent_v1(options_str)
 
 
 
@@ -140,12 +118,12 @@ print("✅ ALL AGENTS ARE LOADED AND READY TO GO!")
 
 async def test_sequence_routing(queries: list[str]):
     for query in queries:
-        # 1.    Router Agent output
+        # 1.    Router Agent returns the agent it has chosen for the query
         router_session = await session_service.create_session(app_name=router_agent.name, user_id=my_user_id)
         print(f"\nQUERY: '{query}'")
         print("ASKING THE ROUTER AGENT TO MAKE A DECISION.")
         chosen_route = await run_agent_query(router_agent, query, router_session, my_user_id, session_service, is_router=True)
-        
+
         # Robust cleaning of router response
         if chosen_route:
             chosen_route = chosen_route.strip().strip("'\"").strip()
