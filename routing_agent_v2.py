@@ -23,7 +23,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler("routing_agents1.log"),
+        logging.FileHandler("routing_agents_v2.log"),
         logging.StreamHandler()
     ]
 )
