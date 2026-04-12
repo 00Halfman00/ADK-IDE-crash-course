@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 from google.adk.agents import Agent
 from google.adk.sessions import InMemorySessionService
 
-
 from routed_agents_v1 import (
     create_day_trip_agent,
     create_foodie_agent,
@@ -35,6 +34,8 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
+print("✅ LOGGER ARE CONFIGURED, LOADED AND READY TO GO!")
+
 
 
 # <-----  II.   LOAD/INIT ENVIRNONMENT VARIABLES  ------>
@@ -54,8 +55,6 @@ my_user_id = "adk_adventurer_007"
 print("✅ ALL ENVIRONMENT VARIABLES ARE LOADED AND READY TO GO!")
 
 
-
-
 # <-----  III.   DEFINE THE SPECIALIST AGENTS  ------>
 
 foodie_agent: Agent = create_foodie_agent()
@@ -63,7 +62,7 @@ weekend_guide_agent:Agent = create_weekend_guide_agent()
 day_trip_agent:Agent = create_day_trip_agent()
 transportation_agent:Agent = create_transportation_agent()
 
-print("✅ ALL AGENTS ARE LOADED AND READY TO GO!")
+print("✅ ALL SPECIALIST AGENTS ARE LOADED AND READY TO GO!")
 
 
 
@@ -78,6 +77,7 @@ ROUTE_DESCRIPTIONS = {
 }
 
 options_str = "\n".join([f"- '{k}': {v}" for k, v in ROUTE_DESCRIPTIONS.items()])
+
 
 worker_agents: dict[str, Agent] = {
     "foodie_agent": foodie_agent,
@@ -95,51 +95,52 @@ queries = [
 print("✅ AGENT INFO IS READY TO GO!")
 
 
+
+
 # <-----  V.    DEFINE CUSTOM AGENT WORKFLOWS (COMBO ROUTES)  ------>
 
-async def handle_find_and_navigate(query):
+async def handle_and_navigate(query):
     foodie_session = await session_service.create_session(app_name=foodie_agent.name, user_id=my_user_id)
     foodie_response = await run_agent_query(foodie_agent, query, foodie_session, my_user_id, session_service)
     print(f"FOODIE AGENT'S RESPONSE: '{foodie_response}'")
 
-    directions_query = f"Give me directions to the place mentioned in this recommendation: {foodie_response}. Starting direction is Palo Alto Caltrain station."
+    directions_query = f"Return directions from this recommendated place: {foodie_response}. Starting directions is Palo Alto Caltrain station."
     transportation_session = await session_service.create_session(app_name=transportation_agent.name, user_id=my_user_id)
-    await run_agent_query(transportation_agent, directions_query, transportation_session, my_user_id ,session_service)
+    await run_agent_query(transportation_agent, directions_query, transportation_session, my_user_id, session_service)
     print(f"FIND AND NAVIGATE COMBO FINISHED RUNNING.")
 
-print("✅ CUSTOM WORKFLOW IS LOADED AND READY TO GO!")
+
 
 
 # <-----  VI.   DEFINE THE BRAINS OF THE OPERATION: THE ROUTER AGENT  ------>
 
 router_agent_v1 = create_router_agent_v1(options_str)
 
-print("✅ ROUTER AGENT IS LOADED AND READY TO GO!")
 
 
 
-
-# <-----  VII.   TESTS SEQUENCE ROUTER  ------>
+# <-----  VII.   RUN SEQUENCE ROUTER  ------>
 
 async def run_sequence_router(queries: list[str]):
     for query in queries:
-        router_session = await session_service.create_session(app_name=router_agent_v1.name, user_id=my_user_id)
-        chosen_route = await run_agent_query(router_agent_v1, query, router_session, my_user_id, session_service, is_router=True)
+        router_v1_session = await session_service.create_session(app_name=router_agent_v1.name, user_id=my_user_id)
+        chosen_route = await run_agent_query(router_agent_v1, query, router_v1_session, my_user_id, session_service, is_router=True)
         if chosen_route:
-            chosen_route = chosen_route.strip().strip("'\"").strip()    
+            chosen_route = chosen_route.strip().strip("'\"").strip()
         print(f"ROUTER HAS SELECTED THIS ROUTE: '{chosen_route}'")
 
-        if chosen_route == "find_and_navigate_combo":
-            await handle_find_and_navigate(query)
+
+        if chosen_route == "find_and_naviagate_combo":
+            await handle_and_navigate(query)
             continue
         
+
         if chosen_route in worker_agents:
             worker_agent = worker_agents.get(chosen_route, day_trip_agent)
+        
 
-
-        worker_session = await session_service.create_session(app_name=worker_agent.name, user_id=my_user_id)
+        worker_session = await session_service.create_session(app_name=router_agent_v1.name, user_id=my_user_id)
         await run_agent_query(worker_agent, query, worker_session, my_user_id, session_service)
-
 
 
 

@@ -4,11 +4,16 @@ import vertexai
 import asyncio
 
 from dotenv import load_dotenv
-from google.adk.agents import Agent
 from google.adk.sessions import InMemorySessionService
 
 
-from agents import create_day_trip_agent, create_restaurant_agent, create_weekend_guide_agent, create_transportation_agent ,create_find_and_navigate_agent, create_router_agent_v2
+from agents import (
+    create_day_trip_agent,
+    create_restaurant_agent,
+    create_weekend_guide_agent,
+    create_transportation_agent,
+    create_find_and_navigate_agent,
+    create_router_agent_v2)
 from agent_query import run_agent_query
 
 print("✅ ALL LIBRARIES ARE LOADED AND READY TO GO!")

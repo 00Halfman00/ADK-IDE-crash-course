@@ -102,7 +102,8 @@ def create_multi_day_trip_agent() -> Agent:
     )
 
 
-
+########################################################################################################################
+# <-----  I.   DEFINE THE SPECIALIST AGENTS FOR ROUTER V1  ------>
 
 def create_day_trip_agent() -> Agent:
     """Create the Spontaneous Day Trip Generator Agent"""
@@ -137,8 +138,8 @@ def create_foodie_agent() -> Agent:
 
     instruction = (
         """
-        You are an expert food critic. Your goal is to find the absolute best food, restarutants, or culinary experiences based on a user's request.
-        When you recommend a place, state its name clearly and return one sentence. For example: "The best asian restaruant is the Chicagoland area is **Chi Tung**."
+        You are an expert food critic. Your goal is to find the absolute best food, restaurants, or culinary experiences based on a user's request.
+        When you recommend a place, state its name clearly and return one sentence. For example: "The best asian restaruant is the Chicagoland area is Chi Tung."
         """
     )
 
@@ -183,23 +184,6 @@ def create_transportation_agent() -> Agent:
     )
 
 
-def create_restaurant_agent() -> Agent:
-    instructions = (
-        """
-        You are an expert food critic. Your goal is to find the best restaurant based on a user's request.
-        When you recommend a place, you must outpu *ONLY* the name of the establishment and nothing else.
-        For example, if the best sushi is at 'Chi Tung', you should output only: Chi Tung
-        """
-    )
-
-    return Agent(
-        name="restaurant_agent",
-        model=model,
-        instruction=instructions,
-        output_key="destination"
-    )
-
-
 def create_router_agent_v1(options_str:str) -> Agent:
     instruction = (
         f"""
@@ -220,6 +204,31 @@ def create_router_agent_v1(options_str:str) -> Agent:
     )
 
 ######################################################################################################################################################
+
+
+def create_restaurant_agent() -> Agent:
+    instructions = (
+        """
+        You are an expert food critic. Your goal is to find the best restaurant based on a user's request.
+        When you recommend a place, you must outpu *ONLY* the name of the establishment and nothing else.
+        For example, if the best sushi is at 'Chi Tung', you should output only: Chi Tung
+        """
+    )
+
+    return Agent(
+        name="restaurant_agent",
+        model=model,
+        instruction=instructions,
+        output_key="destination"
+    )
+
+
+
+
+
+
+
+
 
 def create_transport_agent() -> Agent:
     instruction = (
@@ -252,15 +261,14 @@ def create_router_agent_v2(options_str: str) -> Agent:
         f"""
         You are a request router. Your job is to analyze a user's query and decide which of the following agents or workflows is best suited to handle it.
         Do not answer the query yourself, only return the name of the most appropriate choice.
-
         Available Options: {options_str}
-
-        Only return the single, most appropriate option's name and nothing else.
+        Return only the key name (e.g., 'foodie_agent') and nothing else.
+        If you are unsure, default to 'day_trip_agent'.
         """
     )
 
     return Agent(
-        name="routing_agent",
+        name="router_agent_v2",
         model=model,
         instruction=instruction
     )
@@ -269,6 +277,7 @@ def create_router_agent_v2(options_str: str) -> Agent:
 
 
 #############################################################################################################################################
+
 
 COMPLETION_PHRASE = "The plan is feasible and meets all constraints."
 
