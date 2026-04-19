@@ -6,7 +6,10 @@ import asyncio
 from dotenv import load_dotenv
 from google.adk.sessions import InMemorySessionService
 
-from agents import create_day_trip_agent, create_weekend_guide_agent
+from routed_agents_v1 import (
+    create_day_trip_agent,
+    create_weekend_guide_agent
+)
 from routed_agents_v2 import (
     create_foodie_agent_v2,
     create_transportation_agent_v2,
@@ -57,12 +60,15 @@ print("✅ ALL ENVIRONMENT VARIABLES ARE LOADED AND READY TO GO!")
 
 # <-----  III.   DEFINE THE SPECIALIST AGENTS  ------>
 day_trip_agent = create_day_trip_agent()
-foodie_agent_v2 = create_foodie_agent_v2()
 weekend_guide_agent = create_weekend_guide_agent()
+
+print("✅ ALL SPECIALIST AGENTS ARE LOADED AND READY TO GO!")
+
+foodie_agent_v2 = create_foodie_agent_v2()
 transportation_agent_v2 = create_transportation_agent_v2()
 find_and_navigate_agent = create_find_and_navigate_agent([foodie_agent_v2, transportation_agent_v2])
 
-print("✅ ALL SPECIALIST AGENTS ARE LOADED AND READY TO GO!")
+print("✅ ALL SEQUENTIAL WORKFLOW AGENS ARE LOADED AND READY TO GO!")
 
 
 
@@ -82,7 +88,7 @@ worker_agents = {
     "foodie_agent": foodie_agent_v2,
     "weekend_guide_agent": weekend_guide_agent,
     "day_trip_agent": day_trip_agent,
-    "transport_agent": transportation_agent_v2
+    "find_and_navigate_agent": find_and_navigate_agent
 }
 
 queries = [
@@ -96,14 +102,16 @@ print("✅ AGENT INFO IS READY TO GO!")
 
 
 
-# <-----  V.   DEFINE THE BRAINS OF THE OPERATION: THE ROUTER AGENT  ------>
+# <-----  V.   DEFINE THE ROUTER AGENT  ------>
 
 router_agent_v2 = create_router_agent_v2(options_str)
 
+print("✅ ROUTER AGENT IS LOADED AND READY TO GO!")
 
 
 
-# <-----  VII.   RUN SEQUENCE ROUTER  ------>
+
+# <-----  VII.   RUN SEQUENCE ROUTER (ORCHESTRATI0N APPROACH)  ------>
 
 async def run_sequence_router(queries: list[str]):
     for query in queries:

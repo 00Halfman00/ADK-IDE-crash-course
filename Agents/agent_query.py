@@ -19,7 +19,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler("run_agent_query.log"),
+        logging.FileHandler("agent_query.log"),
         logging.StreamHandler()
     ],
     force=True
@@ -64,7 +64,7 @@ async def run_agent_query(agent: Agent, query: str, session: Session, user_id: s
         async for event in runner.run_async(user_id=user_id, session_id=session.id, new_message=Content(parts=[Part(text=query)], role="user")):
             if not is_router:
                 # Let's see what the agent is thinking!
-                print(f"<---------------------------    EVENT:    -------------------------------------------->\n {event}")
+                print(f"\n\n<---------------------------    EVENT:    -------------------------------------------->\n {event}")
             if event.is_final_response() and event.content and event.content.parts:
                 final_response = event.content.parts[0].text
 

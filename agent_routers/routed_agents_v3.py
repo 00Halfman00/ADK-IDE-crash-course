@@ -1,7 +1,6 @@
 from google.adk.agents import Agent, SequentialAgent, ParallelAgent, BaseAgent, LoopAgent
-from google.adk.tools import ToolContext
+from google.adk.tools import ToolContext, AgentTool, google_search
 from google.adk.tools.agent_tool import AgentTool
-from google.adk.tools import google_search
 from typing import cast
 
 
@@ -14,7 +13,7 @@ model = "gemini-2.5-flash"
 
 COMPLETION_PHRASE = "The plan is feasible and meets all constraints."
 
-
+#   DEFINE EXIT LOOP HELPER FUNCTION
 def exit_loop(tool_context: ToolContext) -> object:
     """Call this function ONLY when the plan is approved, signaling the loop should end."""
 
@@ -23,7 +22,7 @@ def exit_loop(tool_context: ToolContext) -> object:
     return {}
 
 
-# Agent 1: Proposes an initial plan
+#   DEFINE AGENT 1: PROPOSES INITIAL PLAN
 def create_planner_agent() -> Agent:
     instruction = (
         """
@@ -35,13 +34,14 @@ def create_planner_agent() -> Agent:
     return Agent(
         name="planner_agent",
         model=model,
+        tools=[google_search],
         instruction=instruction,
         output_key="current_plan"
     )
 
 
-# Agent 2 (in loop): Critiques the plan
-def create_critic_agent() -> Agent:
+#   DEFINE AGENT 2 (IN LOOP): CRITIQUES THE PLAN
+def create_critic_agent(name: str) -> Agent:
     instruction = (
         f"""
         You are a logistics expert. Your job is to critique a travel plan. The user has a strict constraint: total travel time must be short.
@@ -49,12 +49,12 @@ def create_critic_agent() -> Agent:
         Use your tools to check the travel time between the two locations.
 
         IF the travel time is over 45 minutes, provide a critique, like: 'This plan is inefficient. Find a restaurant closer to the activity.
-        ELSE, respond with texact phrase: '{COMPLETION_PHRASE}'
+        ELSE, respond with exact phrase: '{COMPLETION_PHRASE}'
         """
     )
 
     return Agent(
-        name="critic_agent",
+        name=name,
         model=model,
         tools=[google_search],
         instruction=instruction,
@@ -62,27 +62,52 @@ def create_critic_agent() -> Agent:
     )
 
 
-# Agent 3 (in loop): Refines the plan or exits
+
+#   DEFINE AGENT 3 (IN LOOP): REFINES THE PLAN OR EXITS
 def create_refiner_agent() -> Agent:
     instruction = (
         f"""
         You are a trip planner, refining a plan based on criticism.
         Original request: {{session.query}}
         Critique: {{criticism}}
-        IF the critique is '{COMPLETION_PHRASE}', you MUST call the 'exit_loop' tool.
-        ELSE, generate a NEW plan that addresses the critique. Output only the new names, like: 'Activity: de Young Museum, Restaurant: Nopa'.
+        
+        1.  IF the critique is '{COMPLETION_PHRASE}', you MUST output the Current Plan exactly as it is: {{current_plan}}. Do not add any other text.
+        2.  ELSE, use your tools to find a NEW activity and restaurant. Output only the names, like: 'Activity': Exploratorium, Restaurant: 'La Mar'.
         """
     )
 
     return Agent(
         name="refiner_agent",
         model=model,
-        tools=[google_search, exit_loop],
+        tools=[google_search],
         instruction=instruction,
         output_key="current_plan"
     )
 
+def create_judge_agent() -> Agent:
+    instruction = (
+        f"""
+        You are a judge overseeing the refinement process. Your job is to ensure that the critique and refinement agents are doing their jobs correctly.
+        Original request: {{session.query}}
+        Current Plan: {{current_plan}}
+        Critique: {{criticism}}
 
+        
+        1.  IF '{COMPLETION_PHRASE}' is in the Critique, you MUST call 'exit_loop' and output the following: {{current_plan}}.
+        2.  IF the critique does not address the user's constraint (short travel time), respond with: 'The critique is not valid because it does not address the user's constraint.'
+        3.  IF the refiner's new plan does not seem to address the critique, respond with: 'The refinement does not seem to address the critique.'
+        """
+    )
+
+    return Agent(
+        name="judge_agent",
+        model=model,
+        tools=[exit_loop],
+        instruction=instruction,
+        output_key="judgement"
+    )
+
+#   DEFINE THE LOOP AGENT THAT ORCHESTRATES THE CRITIQUE-REFINE CYCLE
 def create_refinement_loop_agent(agents: list[Agent]) -> LoopAgent:
     return LoopAgent(
         name="refinement_agent",
@@ -90,6 +115,7 @@ def create_refinement_loop_agent(agents: list[Agent]) -> LoopAgent:
     )
 
 
+#   DEFINE THE SEQUENTIAL AGENT THAT WILL MANAGE THE WORKFLOW
 def create_iterative_planner_agent(agents: list[Agent | LoopAgent]) -> SequentialAgent:
     return SequentialAgent(
         name="iterative_planner_agent",
@@ -103,6 +129,7 @@ def create_iterative_planner_agent(agents: list[Agent | LoopAgent]) -> Sequentia
 
 # <-----  II.    AGENT DEFINITIONS FOR PARALLEL WORKFLOW     ----->
 
+#   DEFINE AGENT 1
 def create_museum_finder_agent() -> Agent:
     instruction = (
         """
@@ -111,7 +138,7 @@ def create_museum_finder_agent() -> Agent:
     )
 
     return Agent(
-        name="museum_finger_agent",
+        name="museum_finder_agent",
         model=model,
         tools=[google_search],
         instruction=instruction,
@@ -119,16 +146,16 @@ def create_museum_finder_agent() -> Agent:
     )
 
 
-
+#   DEFINE AGENT 2
 def create_concert_finder_agent() -> Agent:
     instruction = (
         """
-        You are an events guide. Finda a concert based on the user's query. Output only the concert name and artist.
+        You are an events guide. Find a concert based on the user's query. Output only the concert name and artist.
         """
     )
 
     return Agent(
-        name="concert_finder-agent",
+        name="concert_finder_agent",
         model=model,
         instruction=instruction,
         tools=[google_search],
@@ -137,12 +164,12 @@ def create_concert_finder_agent() -> Agent:
 
 
 
-
+#   DEFINE AGENT 3
 def create_restaurant_finder_agent() -> Agent:
     instructions = (
         """
         You are an expert food critic. Your goal is to find the best restaurant based on a user's request.
-        When you recommend a place, you must outpu *ONLY* the name of the establishment and nothing else.
+        When you recommend a place, you must output *ONLY* the name of the establishment and nothing else.
         For example, if the best sushi is at 'Chi Tung', you should output only: Chi Tung
         """
     )
@@ -151,11 +178,12 @@ def create_restaurant_finder_agent() -> Agent:
         name="restaurant_agent",
         model=model,
         instruction=instructions,
+        tools=[google_search],
         output_key="restaurant_result"
     )
 
 
-
+#   DEFINE THE PARALLEL AGENT THAT WILL RUNT AGENT 1, AGENT 2, AND AGENT 3 CONCURRENTLY
 def create_parallel_research_agent(agents:list[Agent]) -> ParallelAgent:
     return ParallelAgent(
         name="parallel_research_agent",
@@ -163,9 +191,9 @@ def create_parallel_research_agent(agents:list[Agent]) -> ParallelAgent:
     )
 
 
-
+#   DEFINE AGENT THAT WILL SYNTHESIZE THE WORKFLOW
 def create_synthesis_agent() -> Agent:
-    instrucion = (
+    instruction = (
         """
         You are a helpful assistant. Combine the following research results into a clear, bulleted list for the user.
         -   Museum: {museum_result}
@@ -175,13 +203,13 @@ def create_synthesis_agent() -> Agent:
     )
 
     return Agent(
-        name="syntesis_agent",
+        name="synthesis_agent",
         model=model,
-        instruction=instrucion
+        instruction=instruction
     )
 
 
-
+#   DEFINE THE SEQUENTIAL AGENT THAT WILL MANAGE THE WORKFLOW
 def create_parallel_planner_agent(agents: list[Agent | ParallelAgent]) -> SequentialAgent:
     return SequentialAgent(
         name="parallel_planner_agent",
@@ -191,7 +219,7 @@ def create_parallel_planner_agent(agents: list[Agent | ParallelAgent]) -> Sequen
 
 
 
-
+#   DEFINE THE BRAINS OF THE OPERATION: THE ROUTER AGENT
 def create_router_agent_v3(options_str: str) -> Agent:
     instruction = (
         f"""

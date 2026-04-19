@@ -10,13 +10,11 @@ model = "gemini-2.5-flash"
 
 # <-----  I.   DEFINE THE SPECIALIST AGENTS  ------>
 
-
-
 def create_foodie_agent_v2() -> Agent:
     instructions = (
         """
         You are an expert food critic. Your goal is to find the best restaurant based on a user's request.
-        When you recommend a place, you must outpu *ONLY* the name of the establishment and nothing else.
+        When you recommend a place, you must output *ONLY* the name of the establishment and nothing else.
         For example, if the best sushi is at 'Chi Tung', you should output only: Chi Tung
         """
     )
@@ -25,9 +23,9 @@ def create_foodie_agent_v2() -> Agent:
         name="restaurant_agent",
         model=model,
         instruction=instructions,
+        tools=[google_search],
         output_key="destination"
     )
-
 
 
 def create_transportation_agent_v2() -> Agent:
@@ -48,6 +46,12 @@ def create_transportation_agent_v2() -> Agent:
     )
 
 
+
+
+
+
+# <-----  I.   DEFINE THE SEQUENTIAL AGENT THAT WILL MANAGE THE WORKFLOW  ------>
+
 def create_find_and_navigate_agent(agents: list[Agent]) -> SequentialAgent:
     return SequentialAgent(
         name="find_and_navigate_agent",
@@ -56,6 +60,10 @@ def create_find_and_navigate_agent(agents: list[Agent]) -> SequentialAgent:
     )
 
 
+
+
+
+# <-----  III.   DEFINE THE BRAINS OF THE OPERATION: THE ROUTER AGENT  ------>
 
 def create_router_agent_v2(options_str: str) -> Agent:
     instruction = (

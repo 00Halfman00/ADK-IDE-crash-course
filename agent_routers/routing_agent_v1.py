@@ -7,14 +7,6 @@ from dotenv import load_dotenv
 from google.adk.agents import Agent
 from google.adk.sessions import InMemorySessionService
 
-from routed_agents_v1 import (
-    create_day_trip_agent,
-    create_foodie_agent,
-    create_weekend_guide_agent,
-    create_transportation_agent,
-    create_router_agent_v1)
-from agent_query import run_agent_query
-
 print("✅ ALL LIBRARIES ARE LOADED AND READY TO GO!")
 
 
@@ -22,19 +14,18 @@ print("✅ ALL LIBRARIES ARE LOADED AND READY TO GO!")
 
 # <-----  I.    CONFIGURE LOGGING  ------>
 
-
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
         logging.FileHandler("routing_agents1.log"),
-        logging.StreamHandler()
     ]
 )
 
 logger = logging.getLogger(__name__)
 
-print("✅ LOGGER ARE CONFIGURED, LOADED AND READY TO GO!")
+print("✅ LOGGERS ARE CONFIGURED, LOADED AND READY TO GO!")
+
 
 
 
@@ -55,7 +46,17 @@ my_user_id = "adk_adventurer_007"
 print("✅ ALL ENVIRONMENT VARIABLES ARE LOADED AND READY TO GO!")
 
 
+
+
 # <-----  III.   DEFINE THE SPECIALIST AGENTS  ------>
+
+from routed_agents_v1 import (
+    create_day_trip_agent,
+    create_foodie_agent,
+    create_weekend_guide_agent,
+    create_transportation_agent,
+    create_router_agent_v1)
+from agent_query import run_agent_query
 
 foodie_agent: Agent = create_foodie_agent()
 weekend_guide_agent:Agent = create_weekend_guide_agent()
@@ -97,7 +98,7 @@ print("✅ AGENT INFO IS READY TO GO!")
 
 
 
-# <-----  V.    DEFINE CUSTOM AGENT WORKFLOWS (COMBO ROUTES)  ------>
+# <-----  V.    DEFINE HELPER FUNCTION THAT RUNS CUSTOM AGENT WORKFLOWS (COMBO ROUTES)  ------>
 
 async def handle_and_navigate(query):
     foodie_session = await session_service.create_session(app_name=foodie_agent.name, user_id=my_user_id)
@@ -112,14 +113,14 @@ async def handle_and_navigate(query):
 
 
 
-# <-----  VI.   DEFINE THE BRAINS OF THE OPERATION: THE ROUTER AGENT  ------>
+# <-----  VI.   DEFINE THE ROUTER AGENT  ------>
 
 router_agent_v1 = create_router_agent_v1(options_str)
 
+print("✅ ROUTER AGENT IS LOADED AND READY TO GO!")
 
 
-
-# <-----  VII.   RUN SEQUENCE ROUTER  ------>
+# <-----  VII.   RUN SEQUENCE ROUTER (DECLARATIVE APPROACH)  ------>
 
 async def run_sequence_router(queries: list[str]):
     for query in queries:
@@ -130,7 +131,7 @@ async def run_sequence_router(queries: list[str]):
         print(f"ROUTER HAS SELECTED THIS ROUTE: '{chosen_route}'")
 
 
-        if chosen_route == "find_and_naviagate_combo":
+        if chosen_route == "find_and_navigate_combo":
             await handle_and_navigate(query)
             continue
         
@@ -139,7 +140,7 @@ async def run_sequence_router(queries: list[str]):
             worker_agent = worker_agents.get(chosen_route, day_trip_agent)
         
 
-        worker_session = await session_service.create_session(app_name=router_agent_v1.name, user_id=my_user_id)
+        worker_session = await session_service.create_session(app_name=worker_agent.name, user_id=my_user_id)
         await run_agent_query(worker_agent, query, worker_session, my_user_id, session_service)
 
 

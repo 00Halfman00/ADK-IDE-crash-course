@@ -5,8 +5,6 @@ import vertexai
 
 from google.adk.sessions import InMemorySessionService
 from dotenv import load_dotenv
-from agents import create_day_trip_agent
-from agent_query import run_agent_query
 
 print("✅ ALL LIBRARIES ARE LOADED AND READY TO GO!")
 
@@ -44,16 +42,19 @@ if PROJECT_ID:
 else:
     logger.error("No project id found. AI features will be disabled.")
 
-# <---  Initialize Session Service  --->
-# This one service will manage all the different sessions.
 session_service = InMemorySessionService()
 my_user_id = "adk_adventurer_007"
 
-day_trip_agent= create_day_trip_agent()
-print(f"AGENT: {day_trip_agent.name} IS UP AND READY TO CREATE TRIPS.")
 print("✅ ALL ENVIRONMENT VARIABLES ARE LOADED AND READY TO GO!")
 
 
+
+
+from agents import create_day_trip_agent
+from agent_query import run_agent_query
+
+day_trip_agent= create_day_trip_agent()
+print(f"AGENT: {day_trip_agent.name} IS UP AND READY TO CREATE TRIPS.")
 
 
 

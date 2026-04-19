@@ -1,11 +1,32 @@
+import logging
+
 from google.adk.agents import Agent
 from google.adk.tools.agent_tool import AgentTool
 from google.adk.tools import google_search
 
 
+
+# <-----  I.    CONFIGURE LOGGING  ------>
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler("agents.log")
+    ],
+    force=True
+)
+
+logger = logging.getLogger(__name__)
+
+print("✅ LOGGERS ARE CONFIGURED, LOADED AND READY TO GO!")
+
+
+
+
 model = "gemini-2.5-flash"
 
-# <-----  I.   DEFINE THE SPECIALIST AGENTS  ------>
+# <-----  II.   DEFINE THE SPECIALIST AGENTS  ------>
 
 
 def create_day_trip_agent() -> Agent:
@@ -27,6 +48,7 @@ def create_day_trip_agent() -> Agent:
     return Agent(
         name="day_trip_agent",
         model=model,
+        description="Generates spontaneous full-day itineraries based on mood, budget, and real-time data.",
         instruction=instructions,
         tools=[google_search]
     )
@@ -43,7 +65,7 @@ def create_weather_planner_agent(callback) -> Agent:
 
     return Agent(
         name="weather_aware_planner",
-        model="gemini-2.5-flash",
+        model=model,
         description="A trip planner that checks the real-time weather before making suggestions.",
         instruction=instruction,
         tools=[callback]
@@ -68,6 +90,7 @@ def create_db_agent() -> Agent:
     return Agent(
         name="db_agent",
         model=model,
+        description="Queries the travel database for hotel information and ratings.",
         instruction=instruction
     )
 
@@ -85,13 +108,14 @@ def create_food_critic_agent() -> Agent:
     return Agent(
         name="food_critic_agent",
         model=model,
+        description="A witty food critic providing single, high-quality restaurant recommendations.",
         instruction=instruction
     )
 
 
 
 
-def create_concierge_agent() -> Agent:
+def create_concierge_agent(agent: Agent) -> Agent:
     instruction = (
         """
         You are a five star hotel concierge.
@@ -103,14 +127,13 @@ def create_concierge_agent() -> Agent:
     return Agent(
         name="concierge_agent",
         model=model,
+        description="A high-end concierge that coordinates with a food critic for restaurant advice.",
         instruction=instruction,
-        tools=[AgentTool(agent=create_food_critic_agent())]
+        tools=[AgentTool(agent=agent)]
     )
 
 
 def create_orchestrator_agent(*callbacks) -> Agent:
-    """Create the Orchestrator Agent"""
-
     instruction = (
         """
         You are a master travel planner who uses data to make recommendations.
@@ -121,7 +144,7 @@ def create_orchestrator_agent(*callbacks) -> Agent:
     
     return Agent(
         name="orchestrator_agent",
-        model="gemini-2.5-flash",
+        model=model,
         description="Top-level agent that queries a database for travel data, then calls a concierge agent for recommendations.",
         tools=list(callbacks),
         instruction=instruction

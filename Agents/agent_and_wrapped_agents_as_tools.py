@@ -5,7 +5,6 @@ import vertexai
 
 
 from dotenv import load_dotenv
-from google.adk.agents import Agent
 from google.adk.tools import ToolContext
 from google.adk.tools.agent_tool import AgentTool
 from google.adk.sessions import InMemorySessionService
@@ -46,8 +45,6 @@ if PROJECT_ID:
 else:
     logger.error("No project id found. AI features will be disabled.")
 
-# <---  Initialize Session Service  --->
-# This one service will manage all the different sessions.
 session_service = InMemorySessionService()
 my_user_id = "adk_adventurer_007"
 
@@ -57,8 +54,8 @@ print("✅ ALL ENVIRONMENT VARIABLES ARE LOADED AND READY TO GO!")
 
 
 # <-----  III.   DEFINE THE SPECIALIST AGENTS  ------>
-from .agent_query import run_agent_query
-from .agents import (
+from agent_query import run_agent_query
+from agents import (
     create_db_agent,
     create_food_critic_agent,
     create_concierge_agent
@@ -66,8 +63,7 @@ from .agents import (
 
 db_agent = create_db_agent()
 food_critic_agent = create_food_critic_agent()
-# The Concierge knows how to use the Food Critic
-concierge_agent = create_concierge_agent()
+concierge_agent = create_concierge_agent(food_critic_agent)
 
 print("✅ ALL SPECIALIST AGENTS ARE LOADED AND READY TO GO!")
 
@@ -82,6 +78,7 @@ async def call_db_agent(question: str, tool_context: ToolContext):
     print("<---  TOOL CALL: call_db_agent --->")
     agent_tool = AgentTool(agent=db_agent)
     db_agent_output = await agent_tool.run_async(args={"request": question}, tool_context=tool_context)
+    print(f"DB AGENT OUTPUT: {db_agent_output}")
 
     # Avoid storage collisions/overwrites by keys
     if "db_results" not in tool_context.state:
@@ -109,6 +106,7 @@ async def call_concierge_agent(question: str, tool_context: ToolContext):
 
     agent_tool = AgentTool(agent=concierge_agent)
     concierge_output = await agent_tool.run_async(args={"request": question_with_data}, tool_context=tool_context)
+    print(f"CONCIERGE AGENT OUTPUT: {concierge_output}")
     return concierge_output
 
 
