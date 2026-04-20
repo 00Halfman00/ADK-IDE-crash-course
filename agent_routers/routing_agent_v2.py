@@ -4,9 +4,10 @@ import vertexai
 import asyncio
 
 from dotenv import load_dotenv
+from google.adk.agents import Agent, SequentialAgent
 from google.adk.sessions import InMemorySessionService
 
-from routed_agents_v1 import (
+from agent_routers.sequence_agents import (
     create_day_trip_agent,
     create_weekend_guide_agent
 )
@@ -59,14 +60,14 @@ print("✅ ALL ENVIRONMENT VARIABLES ARE LOADED AND READY TO GO!")
 
 
 # <-----  III.   DEFINE THE SPECIALIST AGENTS  ------>
-day_trip_agent = create_day_trip_agent()
-weekend_guide_agent = create_weekend_guide_agent()
+day_trip_agent: Agent = create_day_trip_agent()
+weekend_guide_agent: Agent = create_weekend_guide_agent()
 
 print("✅ ALL SPECIALIST AGENTS ARE LOADED AND READY TO GO!")
 
-foodie_agent_v2 = create_foodie_agent_v2()
-transportation_agent_v2 = create_transportation_agent_v2()
-find_and_navigate_agent = create_find_and_navigate_agent([foodie_agent_v2, transportation_agent_v2])
+foodie_agent_v2: Agent = create_foodie_agent_v2()
+transportation_agent_v2: Agent = create_transportation_agent_v2()
+find_and_navigate_agent: SequentialAgent = create_find_and_navigate_agent([foodie_agent_v2, transportation_agent_v2])
 
 print("✅ ALL SEQUENTIAL WORKFLOW AGENS ARE LOADED AND READY TO GO!")
 
@@ -84,7 +85,7 @@ ROUTE_DESCRIPTIONS = {
 
 options_str = "\n".join([f"- '{k}': {v}" for k, v in ROUTE_DESCRIPTIONS.items()])
 
-worker_agents = {
+worker_agents: dict[str, Agent | SequentialAgent] = {
     "foodie_agent": foodie_agent_v2,
     "weekend_guide_agent": weekend_guide_agent,
     "day_trip_agent": day_trip_agent,
@@ -104,7 +105,7 @@ print("✅ AGENT INFO IS READY TO GO!")
 
 # <-----  V.   DEFINE THE ROUTER AGENT  ------>
 
-router_agent_v2 = create_router_agent_v2(options_str)
+router_agent_v2: Agent = create_router_agent_v2(options_str)
 
 print("✅ ROUTER AGENT IS LOADED AND READY TO GO!")
 
@@ -118,12 +119,11 @@ async def run_sequence_router(queries: list[str]):
         router_session = await session_service.create_session(app_name=router_agent_v2.name, user_id=my_user_id)
         chosen_route = await run_agent_query(router_agent_v2, query, router_session, my_user_id, session_service, is_router=True)
 
+        worker_agent: Agent | SequentialAgent = day_trip_agent
         if chosen_route:
             chosen_route = chosen_route.strip().strip("'\"").strip()
         if chosen_route in worker_agents:
             worker_agent = worker_agents.get(chosen_route, day_trip_agent)
-        else:
-            worker_agent = day_trip_agent
 
 
         worker_session = await session_service.create_session(app_name=worker_agent.name, user_id=my_user_id)

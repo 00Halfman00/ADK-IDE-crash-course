@@ -50,13 +50,14 @@ print("✅ ALL ENVIRONMENT VARIABLES ARE LOADED AND READY TO GO!")
 
 # <-----  III.   DEFINE THE SPECIALIST AGENTS  ------>
 
-from routed_agents_v1 import (
+from sequence_agents import (
     create_day_trip_agent,
     create_foodie_agent,
     create_weekend_guide_agent,
     create_transportation_agent,
-    create_router_agent_v1)
+    create_sequence_router_agent)
 from agent_query import run_agent_query
+
 
 foodie_agent: Agent = create_foodie_agent()
 weekend_guide_agent:Agent = create_weekend_guide_agent()
@@ -64,7 +65,6 @@ day_trip_agent:Agent = create_day_trip_agent()
 transportation_agent:Agent = create_transportation_agent()
 
 print("✅ ALL SPECIALIST AGENTS ARE LOADED AND READY TO GO!")
-
 
 
 
@@ -87,10 +87,14 @@ worker_agents: dict[str, Agent] = {
     "transportation_agent": transportation_agent
 }
 
+# queries = [
+#     "I want to eat the best sushi in Palo Alto.",
+#     "Are there any cool outdoor concerts this weekend?",
+#     "Find me the best sushi in Palo Alto and then tell me how to get there from the Caltrain station."
+# ]
+
 queries = [
-    "I want to eat the best sushi in Palo Alto.",
-    "Are there any cool outdoor concerts this weekend?",
-    "Find me the best sushi in Palo Alto and then tell me how to get there from the Caltrain station."
+    "Are there any cool outdoor concerts this weekend?"
 ]
 
 print("✅ AGENT INFO IS READY TO GO!")
@@ -115,31 +119,28 @@ async def handle_and_navigate(query):
 
 # <-----  VI.   DEFINE THE ROUTER AGENT  ------>
 
-router_agent_v1 = create_router_agent_v1(options_str)
-
+sequence_router_agent = create_sequence_router_agent(options_str)
 print("✅ ROUTER AGENT IS LOADED AND READY TO GO!")
+
+
 
 
 # <-----  VII.   RUN SEQUENCE ROUTER (DECLARATIVE APPROACH)  ------>
 
 async def run_sequence_router(queries: list[str]):
     for query in queries:
-        router_v1_session = await session_service.create_session(app_name=router_agent_v1.name, user_id=my_user_id)
-        chosen_route = await run_agent_query(router_agent_v1, query, router_v1_session, my_user_id, session_service, is_router=True)
+        router_v1_session = await session_service.create_session(app_name=sequence_router_agent.name, user_id=my_user_id)
+        chosen_route = await run_agent_query(sequence_router_agent, query, router_v1_session, my_user_id, session_service, is_router=True)
+
         if chosen_route:
             chosen_route = chosen_route.strip().strip("'\"").strip()
         print(f"ROUTER HAS SELECTED THIS ROUTE: '{chosen_route}'")
-
-
         if chosen_route == "find_and_navigate_combo":
             await handle_and_navigate(query)
             continue
-        
-
         if chosen_route in worker_agents:
             worker_agent = worker_agents.get(chosen_route, day_trip_agent)
         
-
         worker_session = await session_service.create_session(app_name=worker_agent.name, user_id=my_user_id)
         await run_agent_query(worker_agent, query, worker_session, my_user_id, session_service)
 

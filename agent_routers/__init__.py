@@ -1,10 +1,10 @@
 from .agent_query import run_agent_query
-from .routed_agents_v1 import (
+from .sequence_agents import (
     create_day_trip_agent,
     create_foodie_agent,
     create_weekend_guide_agent,
     create_transportation_agent,
-    create_router_agent_v1
+    create_sequence_router_agent
     )
 from .routed_agents_v2 import (
     create_foodie_agent_v2,

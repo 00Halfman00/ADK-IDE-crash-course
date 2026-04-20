@@ -4,9 +4,10 @@ import vertexai
 import asyncio
 
 from dotenv import load_dotenv
+from google.adk.agents import Agent
 from google.adk.sessions import InMemorySessionService
 
-from routed_agents_v1 import (
+from agent_routers.sequence_agents import (
     create_day_trip_agent,
     create_foodie_agent
 )
@@ -77,49 +78,49 @@ print("✅ ALL ENVIRONMENT VARIABLES ARE LOADED AND READY TO GO!")
 
 # <-----  III.   DEFINE THE SPECIALIST AGENTS  ------>
 
-day_trip_agent = create_day_trip_agent()
-foodie_agent = create_foodie_agent()
+day_trip_agent: Agent = create_day_trip_agent()
+foodie_agent: Agent = create_foodie_agent()
 
 print("✅ ALL SPECIALIST AGENTS ARE LOADED AND READY TO GO!")
 
-foodie_agent_v2 = create_foodie_agent_v2()
-transportation_agent_v2 = create_transportation_agent_v2()
-find_and_navigate_agent = create_find_and_navigate_agent([
+foodie_agent_v2: Agent = create_foodie_agent_v2()
+transportation_agent_v2: Agent = create_transportation_agent_v2()
+find_and_navigate_agent: Agent = create_find_and_navigate_agent([
     foodie_agent_v2,
     transportation_agent_v2
 ])
 
 print("✅ ALL SEQUENTIAL WORKFLOW AGENS ARE LOADED AND READY TO GO!")
 
-museum_finder_agent = create_museum_finder_agent()
-concert_finder_agent = create_concert_finder_agent()
-restaurant_finder_agent = create_restaurant_finder_agent()
-parallel_research_agent = create_parallel_research_agent([
+museum_finder_agent: Agent = create_museum_finder_agent()
+concert_finder_agent: Agent = create_concert_finder_agent()
+restaurant_finder_agent: Agent = create_restaurant_finder_agent()
+parallel_research_agent: Agent = create_parallel_research_agent([
     museum_finder_agent,
     concert_finder_agent,
     restaurant_finder_agent
 ])
-synthesis_agent = create_synthesis_agent()
-parallel_planner_agent = create_parallel_planner_agent([
+synthesis_agent: Agent = create_synthesis_agent()
+parallel_planner_agent: Agent = create_parallel_planner_agent([
     parallel_research_agent, 
     synthesis_agent
 ])
 
 print("✅ ALL PARALLEL WORKFLOW AGENS ARE LOADED AND READY TO GO!")
 
-planner_agent = create_planner_agent()
-critic_agent_1 = create_critic_agent(name="initial_critic_agent")
-critic_agent_2 = create_critic_agent(name="final_critic_agent")
-judge_agent = create_judge_agent()
-refiner_agent = create_refiner_agent()
+planner_agent: Agent = create_planner_agent()
+critic_agent_1: Agent = create_critic_agent(name="initial_critic_agent")
+critic_agent_2: Agent = create_critic_agent(name="final_critic_agent")
+judge_agent: Agent = create_judge_agent()
+refiner_agent: Agent = create_refiner_agent()
 
-refinement_loop_agent = create_refinement_loop_agent([
+refinement_loop_agent: Agent = create_refinement_loop_agent([
     critic_agent_1, 
     refiner_agent, 
     critic_agent_2, 
     judge_agent
 ])
-iterative_planner_agent = create_iterative_planner_agent([
+iterative_planner_agent: Agent = create_iterative_planner_agent([
     planner_agent, 
     refinement_loop_agent
 ])
@@ -142,7 +143,7 @@ ROUTE_DESCRIPTIONS = {
 
 options_str = "\n".join([f"- '{k}': {v}" for k, v in ROUTE_DESCRIPTIONS.items()])
 
-worker_agents = {
+worker_agents: dict[str, Agent] = {
     "day_trip_agent": day_trip_agent, 
     "foodie_agent": foodie_agent, # For simple food queries
     "find_and_navigate_agent": find_and_navigate_agent, # Sequential
@@ -169,7 +170,7 @@ print("✅ AGENT INFO IS READY TO GO!")
 
 # <-----  V.   DEFINE THE ROUTER AGENT  ------>
 
-router_agent_v3 = create_router_agent_v3(options_str)
+router_agent_v3: Agent = create_router_agent_v3(options_str)
 
 print("✅ ROUTER AGENT IS LOADED AND READY TO GO!")
 

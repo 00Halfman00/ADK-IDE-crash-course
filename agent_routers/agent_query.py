@@ -3,13 +3,15 @@ import logging
 import vertexai
 
 from dotenv import load_dotenv
-from google.adk.agents import Agent
+from google.adk.agents import Agent, SequentialAgent
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService, Session
 from google.genai.types import Content, Part
 
 
 print("✅ ALL LIBRARIES ARE LOADED AND READY!")
+
+
 
 
 # <-----  I.    CONFIGURE LOGGING  ------>
@@ -26,6 +28,9 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+print("✅ LOGGERS ARE CONFIGURED, LOADED AND READY TO GO!")
+
+
 
 
 # <-----  II.   LOAD/INIT ENVIRNONMENT VARIABLES  ------>
@@ -40,13 +45,16 @@ if PROJECT_ID:
 else:
     logger.error("No project id found. AI features will be disabled.")
 
+print("✅ ALL ENVIRONMENT VARIABLES ARE LOADED AND READY TO GO!")
+
 
 
 
 #  <-----     III.    FUNCTION TO RUN AGENT    ----->
 
-async def run_agent_query(agent: Agent, query: str, session: Session, user_id: str, session_service: InMemorySessionService, is_router: bool = False):
+async def run_agent_query(agent: Agent | SequentialAgent, query: str, session: Session, user_id: str, session_service: InMemorySessionService, is_router: bool = False):
     """Initializes a runner and executes a query for a given agent and session."""
+
     import asyncio
     await asyncio.sleep(1)
 

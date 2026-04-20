@@ -53,7 +53,11 @@ def create_foodie_agent() -> Agent:
 def create_weekend_guide_agent() -> Agent:
     instruction = (
         """
-        You are a local events guide. Your task is to find interesting events, concerts, festivals, and activities happening on a specific weekend.
+        You are a local events guide. 
+        1. Use Google Search to find real, upcoming events for the requested weekend.
+        2. DO NOT return an empty response.
+        3. ALWAYS summarize your findings in a friendly, bulleted list for the user.
+        4. If no events are found, explicitly state that.
         """
     )
 
@@ -82,9 +86,9 @@ def create_transportation_agent() -> Agent:
 
 
 
-# <-----  II.   DEFINE THE ROUTER AGENT V1  ------>
+# <-----  II.   DEFINE THE SEQUENCE ROUTER AGENT  ------>
 
-def create_router_agent_v1(options_str: str) -> Agent:
+def create_sequence_router_agent(options_str: str) -> Agent:
     instruction = (
         f"""
         You are a request router. Analyze the user's query and choose the best option for the list below.
