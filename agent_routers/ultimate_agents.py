@@ -1,6 +1,5 @@
 from google.adk.agents import Agent, SequentialAgent, ParallelAgent, BaseAgent, LoopAgent
-from google.adk.tools import ToolContext, AgentTool, google_search
-from google.adk.tools.agent_tool import AgentTool
+from google.adk.tools import ToolContext, google_search
 from typing import cast
 
 
@@ -36,7 +35,8 @@ def create_planner_agent() -> Agent:
         model=model,
         tools=[google_search],
         instruction=instruction,
-        output_key="current_plan"
+        output_key="current_plan",
+        description="Proposes an initial activity and restaurant for a trip."
     )
 
 
@@ -58,7 +58,8 @@ def create_critic_agent(name: str) -> Agent:
         model=model,
         tools=[google_search],
         instruction=instruction,
-        output_key="criticism"
+        output_key="criticism",
+        description="Critiques a travel plan based on travel time constraints."
     )
 
 
@@ -81,7 +82,8 @@ def create_refiner_agent() -> Agent:
         model=model,
         tools=[google_search],
         instruction=instruction,
-        output_key="current_plan"
+        output_key="current_plan",
+        description="Refines a travel plan based on criticism or confirms if it meets constraints."
     )
 
 def create_judge_agent() -> Agent:
@@ -104,14 +106,16 @@ def create_judge_agent() -> Agent:
         model=model,
         tools=[exit_loop],
         instruction=instruction,
-        output_key="judgement"
+        output_key="judgement",
+        description="Oversees the refinement process, ensuring critiques are valid and refinements address them."
     )
 
 #   DEFINE THE LOOP AGENT THAT ORCHESTRATES THE CRITIQUE-REFINE CYCLE
 def create_refinement_loop_agent(agents: list[Agent]) -> LoopAgent:
     return LoopAgent(
         name="refinement_agent",
-        sub_agents=cast(list[BaseAgent], agents)
+        sub_agents=cast(list[BaseAgent], agents),
+        description="Orchestrates an iterative cycle of critiquing and refining a trip plan."
     )
 
 
@@ -134,6 +138,7 @@ def create_museum_finder_agent() -> Agent:
     instruction = (
         """
         You are a museum expert. Find the best museum based on the user's query. Output only the museum's name.
+        For example, if the museum is at 'San Francisco Museum of Modern Art (SFMOMA)', you should output only: San Frncisco Museum of Modern Art (SFMOMA).
         """
     )
 
@@ -142,7 +147,8 @@ def create_museum_finder_agent() -> Agent:
         model=model,
         tools=[google_search],
         instruction=instruction,
-        output_key="museum_result"
+        output_key="museum_result",
+        description="Finds the best museum based on the user's query."
     )
 
 
@@ -151,6 +157,7 @@ def create_concert_finder_agent() -> Agent:
     instruction = (
         """
         You are an events guide. Find a concert based on the user's query. Output only the concert name and artist.
+        For example, if the concert is at 'San Frncisco Symphony at Davies Hall', you should output only: San Frncisco Symphony.
         """
     )
 
@@ -159,7 +166,8 @@ def create_concert_finder_agent() -> Agent:
         model=model,
         instruction=instruction,
         tools=[google_search],
-        output_key="concert_result"
+        output_key="concert_result",
+        description="Finds a concert based on the user's query."
     )
 
 
@@ -179,7 +187,8 @@ def create_restaurant_finder_agent() -> Agent:
         model=model,
         instruction=instructions,
         tools=[google_search],
-        output_key="restaurant_result"
+        output_key="restaurant_result",
+        description="Finds the best restaurant based on the user's query."
     )
 
 
@@ -187,7 +196,8 @@ def create_restaurant_finder_agent() -> Agent:
 def create_parallel_research_agent(agents:list[Agent]) -> ParallelAgent:
     return ParallelAgent(
         name="parallel_research_agent",
-        sub_agents=cast(list[BaseAgent], agents)
+        sub_agents=cast(list[BaseAgent], agents),
+        description="Runs multiple research tasks concurrently to find museums, concerts, and restaurants."
     )
 
 
@@ -195,17 +205,25 @@ def create_parallel_research_agent(agents:list[Agent]) -> ParallelAgent:
 def create_synthesis_agent() -> Agent:
     instruction = (
         """
-        You are a helpful assistant. Combine the following research results into a clear, bulleted list for the user.
-        -   Museum: {museum_result}
-        -   Concert: {concert_result}
-        -   Restaurant: {restaurant_result}
+        You are a formatter. Your ONLY job is to take the provided research results and put them into this EXACT format.
+        CRITICAL RULES:
+        1. DO NOT add any descriptions, adjectives, or history about the locations.
+        2. DO NOT explain why these were chosen.
+        3. If a result contains extra text, STRIP IT and keep only the name.
+        4. No introductory or concluding remarks.
+        
+        Format:
+        - Museum: {museum_result}
+        - Concert: {concert_result}
+        - Restaurant: {restaurant_result}
         """
     )
 
     return Agent(
         name="synthesis_agent",
         model=model,
-        instruction=instruction
+        instruction=instruction,
+        description="Extracts names and formats them into a clean list without any extra fluff."
     )
 
 
@@ -234,5 +252,6 @@ def create_router_agent_v3(options_str: str) -> Agent:
     return Agent(
         name="router_agent",
         model=model,
-        instruction=instruction
+        instruction=instruction,
+        description="Analyzes a user's query and routes it to the most appropriate agent or workflow."
     )

@@ -87,15 +87,12 @@ worker_agents: dict[str, Agent] = {
     "transportation_agent": transportation_agent
 }
 
-# queries = [
-#     "I want to eat the best sushi in Palo Alto.",
-#     "Are there any cool outdoor concerts this weekend?",
-#     "Find me the best sushi in Palo Alto and then tell me how to get there from the Caltrain station."
-# ]
-
 queries = [
-    "Are there any cool outdoor concerts this weekend?"
+    "I want to eat the best sushi in Palo Alto.",
+    "Are there any cool outdoor concerts this weekend?",
+    "Find me the best sushi in Palo Alto and then tell me how to get there from the Caltrain station."
 ]
+
 
 print("✅ AGENT INFO IS READY TO GO!")
 

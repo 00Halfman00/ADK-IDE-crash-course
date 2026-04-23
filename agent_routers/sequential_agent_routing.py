@@ -11,7 +11,7 @@ from agent_routers.sequence_agents import (
     create_day_trip_agent,
     create_weekend_guide_agent
 )
-from routed_agents_v2 import (
+from sequential_agent_agents import (
     create_foodie_agent_v2,
     create_transportation_agent_v2,
     create_find_and_navigate_agent,
@@ -106,7 +106,6 @@ print("✅ AGENT INFO IS READY TO GO!")
 # <-----  V.   DEFINE THE ROUTER AGENT  ------>
 
 router_agent_v2: Agent = create_router_agent_v2(options_str)
-
 print("✅ ROUTER AGENT IS LOADED AND READY TO GO!")
 
 
